@@ -3,7 +3,7 @@
   "publisher": "corysimmons",
   "displayName": "vscode-select-references",
   "description": "Adds references to your current selection. Think cmd+D but works on variables.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "repository": {
     "url": "https://github.com/corysimmons/vscode-select-references"
   },
