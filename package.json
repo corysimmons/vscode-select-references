@@ -15,21 +15,9 @@
       {
         "command": "vscode-select-references.addReferencesToSelection",
         "title": "Select All References"
-      },
-      {
-        "command": "vscode-select-references.addNextReferenceToSelection",
-        "title": "Add Next Reference to Selection"
       }
     ],
     "keybindings": [
-      {
-        "command": "vscode-select-references.addNextReferenceToSelection",
-        "key": "cmd+alt+d",
-        "when": "editorTextFocus",
-        "mac": "cmd+alt+d",
-        "win": "ctrl+alt+d",
-        "linux": "ctrl+alt+d"
-      },
       {
         "command": "vscode-select-references.addReferencesToSelection",
         "key": "cmd+alt+f",
