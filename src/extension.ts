@@ -1,26 +1,74 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
+let referenceLocations: vscode.Location[] = [];
+let currentIndex = 0;
+
 export function activate(context: vscode.ExtensionContext) {
+	context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(() => {
+		// Reset state when the active editor changes
+		referenceLocations = [];
+		currentIndex = 0;
+	}));
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "vscode-select-references" is now active!');
+	let disposableSelectAll = vscode.commands.registerCommand('vscode-select-references.addReferencesToSelection', async () => {
+		console.log('Executing command: addReferencesToSelection');
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('vscode-select-references.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from vscode-select-references!');
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			console.log('No active text editor');
+			return;
+		}
+
+		const selection = editor.selection;
+		const word = editor.document.getText(selection);
+		if (!word) {
+			console.log('No word selected');
+			return;
+		}
+
+		try {
+			const locations = await vscode.commands.executeCommand<vscode.Location[]>('vscode.executeReferenceProvider', editor.document.uri, selection.start);
+			if (locations && locations.length > 0) {
+				console.log('Found references:', locations.length);
+				referenceLocations = locations;
+				currentIndex = 0; // Reset the index
+
+				const selections = locations.map(location => new vscode.Selection(location.range.start, location.range.end));
+				editor.selections = selections;
+			} else {
+				console.log('No references found');
+				referenceLocations = []; // Clear references if none found
+			}
+		} catch (err) {
+			console.error('Error finding references:', err);
+		}
 	});
 
-	context.subscriptions.push(disposable);
+	let disposableAddNext = vscode.commands.registerCommand('vscode-select-references.addNextReferenceToSelection', () => {
+		console.log('Executing command: addNextReferenceToSelection');
+		const editor = vscode.window.activeTextEditor;
+
+		if (!editor) {
+			console.log('Command not executed: No active text editor');
+			return;
+		}
+		if (referenceLocations.length === 0) {
+			console.log('Command not executed: No references. Current referenceLocations:', referenceLocations);
+			return;
+		}
+
+		console.log('Current Index:', currentIndex, 'Total References:', referenceLocations.length);
+		if (currentIndex < referenceLocations.length) {
+			const nextRef = referenceLocations[currentIndex++];
+			console.log('Adding next reference:', nextRef);
+			editor.selections = [...editor.selections, new vscode.Selection(nextRef.range.start, nextRef.range.end)];
+		} else {
+			console.log('No more references to add');
+		}
+	});
+
+
+	context.subscriptions.push(disposableSelectAll, disposableAddNext);
 }
 
-// This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() { }
