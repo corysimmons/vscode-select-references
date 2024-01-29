@@ -1,7 +1,6 @@
 {
   "name": "vscode-select-references",
   "publisher": "corysimmons",
-  "license": "MIT",
   "displayName": "vscode-select-references",
   "description": "Adds references to your current selection. Think cmd+D but works on variables.",
   "version": "0.0.1",
