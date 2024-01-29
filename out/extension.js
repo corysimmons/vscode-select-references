@@ -25,9 +25,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deactivate = exports.activate = void 0;
 const vscode = __importStar(require("vscode"));
-let referenceLocations = [];
-let currentIndex = 0;
 function activate(context) {
+    let referenceLocations = [];
+    let currentIndex = 0;
     context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(() => {
         // Reset state when the active editor changes
         referenceLocations = [];
@@ -64,26 +64,21 @@ function activate(context) {
             console.error('Error finding references:', err);
         }
     });
-    let disposableAddNext = vscode.commands.registerCommand('vscode-select-references.addNextReferenceToSelection', () => {
-        console.log('Executing command: addNextReferenceToSelection');
+    let disposableAddNext = vscode.commands.registerCommand('vscode-select-references.addNextReferenceToSelection', async () => {
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
-            console.log('Command not executed: No active text editor');
+            console.log('No active text editor');
             return;
         }
         if (referenceLocations.length === 0) {
-            console.log('Command not executed: No references. Current referenceLocations:', referenceLocations);
+            console.log('No references stored');
             return;
         }
-        console.log('Current Index:', currentIndex, 'Total References:', referenceLocations.length);
-        if (currentIndex < referenceLocations.length) {
-            const nextRef = referenceLocations[currentIndex++];
-            console.log('Adding next reference:', nextRef);
-            editor.selections = [...editor.selections, new vscode.Selection(nextRef.range.start, nextRef.range.end)];
-        }
-        else {
-            console.log('No more references to add');
-        }
+        currentIndex = (currentIndex + 1) % referenceLocations.length;
+        const nextReference = referenceLocations[currentIndex];
+        const newSelection = new vscode.Selection(nextReference.range.start, nextReference.range.end);
+        editor.selections = [...editor.selections, newSelection];
+        editor.revealRange(newSelection, vscode.TextEditorRevealType.InCenter);
     });
     context.subscriptions.push(disposableSelectAll, disposableAddNext);
 }
